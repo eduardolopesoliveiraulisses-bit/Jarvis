@@ -72,7 +72,8 @@ button:active {
 
 function falar(texto) {
 
-    const voz = new SpeechSynthesisUtterance(texto);
+    const voz =
+        new SpeechSynthesisUtterance(texto);
 
     voz.lang = "pt-BR";
     voz.rate = 1;
@@ -84,6 +85,7 @@ function falar(texto) {
     window.speechSynthesis.speak(voz);
 }
 
+
 function ouvir() {
 
     const mensagem =
@@ -93,18 +95,23 @@ function ouvir() {
         window.SpeechRecognition ||
         window.webkitSpeechRecognition;
 
+
     if (!Reconhecimento) {
 
         mensagem.innerText =
             "Seu navegador não suporta reconhecimento de voz.";
 
-        falar("Senhor, este navegador não suporta reconhecimento de voz.");
+        falar(
+            "Senhor, este navegador não suporta reconhecimento de voz."
+        );
 
         return;
     }
 
+
     const reconhecimento =
         new Reconhecimento();
+
 
     reconhecimento.lang = "pt-BR";
 
@@ -112,58 +119,254 @@ function ouvir() {
 
     reconhecimento.interimResults = false;
 
+
     mensagem.innerText =
         "🎙️ Estou ouvindo...";
 
+
     reconhecimento.start();
 
-    reconhecimento.onresult = function(event) {
 
-        const texto =
-            event.results[0][0].transcript;
+    reconhecimento.onresult =
+        function(event) {
 
-        mensagem.innerText =
-            "Você disse: " + texto;
+            const texto =
+                event.results[0][0].transcript;
 
-        responder(texto);
+            mensagem.innerText =
+                "Você disse: " + texto;
 
-    };
+            responder(texto);
+        };
 
-    reconhecimento.onerror = function(event) {
 
-        mensagem.innerText =
-            "Erro no microfone: " + event.error;
+    reconhecimento.onerror =
+        function(event) {
 
-    };
+            mensagem.innerText =
+                "Erro no microfone: " +
+                event.error;
+        };
 
 }
 
+
 function responder(texto) {
 
-    texto = texto.toLowerCase();
+    texto =
+        texto.toLowerCase().trim();
 
-    if (texto.includes("olá") ||
-        texto.includes("ola") ||
-        texto.includes("oi")) {
 
-        const resposta =
+    /*
+    ==========================
+    ATIVAÇÃO DO JARVIS
+    ==========================
+    */
+
+    if (
+        texto.includes("ok jarvis") ||
+        texto.includes("okay jarvis") ||
+        texto.includes("jarvis")
+    ) {
+
+        falar(
+            "Sim, senhor. Estou ouvindo."
+        );
+
+        document.getElementById("mensagem")
+            .innerText =
+            "Sim, senhor. Estou ouvindo.";
+
+        return;
+    }
+
+
+    /*
+    ==========================
+    SAUDAÇÃO
+    ==========================
+    */
+
+    if (
+        texto.includes("oi") ||
+        texto.includes("olá") ||
+        texto.includes("ola")
+    ) {
+
+        falar(
+            "Olá, senhor. Como posso ajudar?"
+        );
+
+        document.getElementById("mensagem")
+            .innerText =
             "Olá, senhor. Como posso ajudar?";
 
+        return;
+    }
+
+
+    /*
+    ==========================
+    QUEM É O JARVIS
+    ==========================
+    */
+
+    if (
+        texto.includes("quem é você") ||
+        texto.includes("quem e você") ||
+        texto.includes("quem e voce")
+    ) {
+
+        falar(
+            "Eu sou JARVIS, seu assistente pessoal."
+        );
+
         document.getElementById("mensagem")
-            .innerText = resposta;
+            .innerText =
+            "Eu sou JARVIS, seu assistente pessoal.";
 
-        falar(resposta);
+        return;
+    }
 
-    } else {
+
+    /*
+    ==========================
+    HORA
+    ==========================
+    */
+
+    if (
+        texto.includes("que horas são") ||
+        texto.includes("que horas sao") ||
+        texto.includes("horas")
+    ) {
+
+        const agora =
+            new Date();
+
+        const horas =
+            agora.getHours()
+                .toString()
+                .padStart(2, "0");
+
+        const minutos =
+            agora.getMinutes()
+                .toString()
+                .padStart(2, "0");
+
 
         const resposta =
-            "Comando recebido, senhor. Ainda estou aprendendo a responder a esse tipo de comando.";
+            "Senhor, agora são " +
+            horas +
+            " horas e " +
+            minutos +
+            " minutos.";
+
 
         document.getElementById("mensagem")
-            .innerText = resposta;
+            .innerText =
+            resposta;
 
         falar(resposta);
+
+        return;
     }
+
+
+    /*
+    ==========================
+    ABRIR GOOGLE
+    ==========================
+    */
+
+    if (
+        texto.includes("abrir google") ||
+        texto.includes("abre o google")
+    ) {
+
+        falar(
+            "Abrindo o Google, senhor."
+        );
+
+        document.getElementById("mensagem")
+            .innerText =
+            "Abrindo Google...";
+
+        window.open(
+            "https://www.google.com",
+            "_blank"
+        );
+
+        return;
+    }
+
+
+    /*
+    ==========================
+    ABRIR YOUTUBE
+    ==========================
+    */
+
+    if (
+        texto.includes("abrir youtube") ||
+        texto.includes("abre o youtube")
+    ) {
+
+        falar(
+            "Abrindo o YouTube, senhor."
+        );
+
+        document.getElementById("mensagem")
+            .innerText =
+            "Abrindo YouTube...";
+
+        window.open(
+            "https://www.youtube.com",
+            "_blank"
+        );
+
+        return;
+    }
+
+
+    /*
+    ==========================
+    AGRADECIMENTO
+    ==========================
+    */
+
+    if (
+        texto.includes("obrigado") ||
+        texto.includes("obrigada")
+    ) {
+
+        falar(
+            "Sempre às ordens, senhor."
+        );
+
+        document.getElementById("mensagem")
+            .innerText =
+            "Sempre às ordens, senhor.";
+
+        return;
+    }
+
+
+    /*
+    ==========================
+    COMANDO DESCONHECIDO
+    ==========================
+    */
+
+    const resposta =
+        "Comando recebido, senhor. Ainda estou aprendendo a responder a esse tipo de comando.";
+
+
+    document.getElementById("mensagem")
+        .innerText =
+        resposta;
+
+    falar(resposta);
 
 }
 
