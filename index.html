@@ -34,6 +34,14 @@ p {
     color: #aaa;
     font-size: 18px;
     max-width: 90%;
+    line-height: 1.5;
+}
+
+#listaVozes {
+    margin-top: 15px;
+    color: #777;
+    font-size: 14px;
+    max-width: 90%;
 }
 
 button {
@@ -62,23 +70,144 @@ button:active {
 
 <h1>J.A.R.V.I.S.</h1>
 
-<p id="mensagem">Boa noite, senhor.</p>
+<p id="mensagem">
+Boa noite, senhor.
+</p>
+
+<div id="listaVozes"></div>
 
 <button onclick="ouvir()">
 🎙️ Falar com JARVIS
 </button>
 
+
 <script>
+
+/* ==========================================
+   SISTEMA DE VOZ
+   ========================================== */
+
+let vozes = [];
+
+let vozSelecionada = null;
+
+
+/* ==========================================
+   CARREGAR VOZES DO CELULAR
+   ========================================== */
+
+function carregarVozes() {
+
+    vozes =
+        window.speechSynthesis.getVoices();
+
+    vozes =
+        vozes.filter(function(voz) {
+
+            return voz.lang
+                .toLowerCase()
+                .startsWith("pt");
+
+        });
+
+    mostrarVozes();
+}
+
+
+/* ==========================================
+   MOSTRAR VOZES NA TELA
+   ========================================== */
+
+function mostrarVozes() {
+
+    const lista =
+        document.getElementById("listaVozes");
+
+    if (vozes.length === 0) {
+
+        lista.innerText =
+            "Nenhuma voz em português encontrada.";
+
+        return;
+    }
+
+
+    let texto =
+        "Vozes disponíveis: ";
+
+    for (
+        let i = 0;
+        i < vozes.length;
+        i++
+    ) {
+
+        texto +=
+            (i + 1) +
+            ". " +
+            vozes[i].name;
+
+        if (i < vozes.length - 1) {
+
+            texto += " | ";
+        }
+    }
+
+    lista.innerText = texto;
+}
+
+
+/* ==========================================
+   CARREGAR QUANDO O CELULAR DISPONIBILIZAR
+   ========================================== */
+
+window.speechSynthesis.onvoiceschanged =
+    carregarVozes;
+
+carregarVozes();
+
+
+/* ==========================================
+   JARVIS FALA
+   ========================================== */
 
 function falar(texto) {
 
     const voz =
         new SpeechSynthesisUtterance(texto);
 
+
     voz.lang = "pt-BR";
-    voz.rate = 1;
-    voz.pitch = 0.9;
+
+
+    if (vozSelecionada) {
+
+        voz.voice =
+            vozSelecionada;
+    }
+
+
+    /*
+    VELOCIDADE
+    1 = normal
+    Menor = mais lento
+    Maior = mais rápido
+    */
+
+    voz.rate = 0.95;
+
+
+    /*
+    TOM
+    1 = normal
+    Menor = mais grave
+    Maior = mais agudo
+    */
+
+    voz.pitch = 0.85;
+
+
     voz.volume = 1;
+
 
     window.speechSynthesis.cancel();
 
@@ -86,10 +215,53 @@ function falar(texto) {
 }
 
 
+/* ==========================================
+   TESTAR UMA VOZ
+   ========================================== */
+
+function testarVoz(numero) {
+
+    if (
+        numero < 1 ||
+        numero > vozes.length
+    ) {
+
+        falar(
+            "Essa voz não está disponível, senhor."
+        );
+
+        return;
+    }
+
+
+    vozSelecionada =
+        vozes[numero - 1];
+
+
+    const mensagem =
+        "Olá, senhor. Esta é a voz número " +
+        numero +
+        ".";
+
+
+    document.getElementById("mensagem")
+        .innerText =
+        mensagem;
+
+
+    falar(mensagem);
+}
+
+
+/* ==========================================
+   RECONHECIMENTO DE VOZ
+   ========================================== */
+
 function ouvir() {
 
     const mensagem =
         document.getElementById("mensagem");
+
 
     const Reconhecimento =
         window.SpeechRecognition ||
@@ -113,11 +285,16 @@ function ouvir() {
         new Reconhecimento();
 
 
-    reconhecimento.lang = "pt-BR";
+    reconhecimento.lang =
+        "pt-BR";
 
-    reconhecimento.continuous = false;
 
-    reconhecimento.interimResults = false;
+    reconhecimento.continuous =
+        false;
+
+
+    reconhecimento.interimResults =
+        false;
 
 
     mensagem.innerText =
@@ -131,10 +308,14 @@ function ouvir() {
         function(event) {
 
             const texto =
-                event.results[0][0].transcript;
+                event.results[0][0]
+                .transcript;
+
 
             mensagem.innerText =
-                "Você disse: " + texto;
+                "Você disse: " +
+                texto;
+
 
             responder(texto);
         };
@@ -151,6 +332,10 @@ function ouvir() {
 }
 
 
+/* ==========================================
+   COMANDOS DO JARVIS
+   ========================================== */
+
 function responder(texto) {
 
     texto =
@@ -158,15 +343,79 @@ function responder(texto) {
 
 
     /*
-    ==========================
-    ATIVAÇÃO DO JARVIS
-    ==========================
+    TESTAR VOZES
+    */
+
+    if (
+        texto.includes("testar vozes") ||
+        texto.includes("teste de voz") ||
+        texto.includes("testar voz")
+    ) {
+
+        if (vozes.length === 0) {
+
+            falar(
+                "Senhor, não encontrei vozes em português disponíveis."
+            );
+
+            return;
+        }
+
+
+        document.getElementById("mensagem")
+            .innerText =
+            "Encontrei " +
+            vozes.length +
+            " vozes. Diga, por exemplo: voz 1.";
+
+
+        falar(
+            "Encontrei " +
+            vozes.length +
+            " vozes em português. Diga o número da voz que deseja testar."
+        );
+
+
+        return;
+    }
+
+
+    /*
+    ESCOLHER VOZ
+    */
+
+    const numeroEncontrado =
+        texto.match(/\d+/);
+
+
+    if (
+        numeroEncontrado &&
+        (
+            texto.includes("voz") ||
+            texto.includes("número") ||
+            texto.includes("numero")
+        )
+    ) {
+
+        const numero =
+            parseInt(
+                numeroEncontrado[0]
+            );
+
+
+        testarVoz(numero);
+
+        return;
+    }
+
+
+    /*
+    OK JARVIS
     */
 
     if (
         texto.includes("ok jarvis") ||
-        texto.includes("okay jarvis") ||
-        texto.includes("jarvis")
+        texto.includes("okay jarvis")
     ) {
 
         falar(
@@ -182,9 +431,7 @@ function responder(texto) {
 
 
     /*
-    ==========================
     SAUDAÇÃO
-    ==========================
     */
 
     if (
@@ -206,9 +453,7 @@ function responder(texto) {
 
 
     /*
-    ==========================
-    QUEM É O JARVIS
-    ==========================
+    QUEM É VOCÊ
     */
 
     if (
@@ -217,161 +462,4 @@ function responder(texto) {
         texto.includes("quem e voce")
     ) {
 
-        falar(
-            "Eu sou JARVIS, seu assistente pessoal."
-        );
-
-        document.getElementById("mensagem")
-            .innerText =
-            "Eu sou JARVIS, seu assistente pessoal.";
-
-        return;
-    }
-
-
-    /*
-    ==========================
-    HORA
-    ==========================
-    */
-
-    if (
-        texto.includes("que horas são") ||
-        texto.includes("que horas sao") ||
-        texto.includes("horas")
-    ) {
-
-        const agora =
-            new Date();
-
-        const horas =
-            agora.getHours()
-                .toString()
-                .padStart(2, "0");
-
-        const minutos =
-            agora.getMinutes()
-                .toString()
-                .padStart(2, "0");
-
-
-        const resposta =
-            "Senhor, agora são " +
-            horas +
-            " horas e " +
-            minutos +
-            " minutos.";
-
-
-        document.getElementById("mensagem")
-            .innerText =
-            resposta;
-
-        falar(resposta);
-
-        return;
-    }
-
-
-    /*
-    ==========================
-    ABRIR GOOGLE
-    ==========================
-    */
-
-    if (
-        texto.includes("abrir google") ||
-        texto.includes("abre o google")
-    ) {
-
-        falar(
-            "Abrindo o Google, senhor."
-        );
-
-        document.getElementById("mensagem")
-            .innerText =
-            "Abrindo Google...";
-
-        window.open(
-            "https://www.google.com",
-            "_blank"
-        );
-
-        return;
-    }
-
-
-    /*
-    ==========================
-    ABRIR YOUTUBE
-    ==========================
-    */
-
-    if (
-        texto.includes("abrir youtube") ||
-        texto.includes("abre o youtube")
-    ) {
-
-        falar(
-            "Abrindo o YouTube, senhor."
-        );
-
-        document.getElementById("mensagem")
-            .innerText =
-            "Abrindo YouTube...";
-
-        window.open(
-            "https://www.youtube.com",
-            "_blank"
-        );
-
-        return;
-    }
-
-
-    /*
-    ==========================
-    AGRADECIMENTO
-    ==========================
-    */
-
-    if (
-        texto.includes("obrigado") ||
-        texto.includes("obrigada")
-    ) {
-
-        falar(
-            "Sempre às ordens, senhor."
-        );
-
-        document.getElementById("mensagem")
-            .innerText =
-            "Sempre às ordens, senhor.";
-
-        return;
-    }
-
-
-    /*
-    ==========================
-    COMANDO DESCONHECIDO
-    ==========================
-    */
-
-    const resposta =
-        "Comando recebido, senhor. Ainda estou aprendendo a responder a esse tipo de comando.";
-
-
-    document.getElementById("mensagem")
-        .innerText =
-        resposta;
-
-    falar(resposta);
-
-}
-
-</script>
-
-</body>
-
-</html>
+       
