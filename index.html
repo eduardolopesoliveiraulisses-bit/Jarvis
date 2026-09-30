@@ -133,7 +133,7 @@ Aguardando comando...
 
 
 /* =================================
-   ELEMENTOS DA TELA
+   ELEMENTOS
    ================================= */
 
 const status =
@@ -145,19 +145,15 @@ document.getElementById("debug");
 
 
 /* =================================
-   TESTE DE VOZ
+   VOZ DO JARVIS
    ================================= */
 
 function falar(texto) {
 
-    debug.innerText =
-        "Teste de voz: tentando falar...";
-
-
     if (!("speechSynthesis" in window)) {
 
         debug.innerText =
-            "ERRO: síntese de voz não disponível.";
+            "Síntese de voz não disponível.";
 
         return;
 
@@ -171,11 +167,42 @@ function falar(texto) {
         new SpeechSynthesisUtterance(texto);
 
 
+    /*
+       IDIOMA
+    */
+
     fala.lang = "pt-BR";
 
-    fala.rate = 0.95;
 
-    fala.pitch = 0.85;
+    /*
+       VELOCIDADE
+
+       1.0 = normal
+
+       0.90 = um pouco mais lento
+
+       0.80 = mais lento
+    */
+
+    fala.rate = 0.88;
+
+
+    /*
+       TOM
+
+       1.0 = normal
+
+       0.85 = mais grave
+
+       0.75 = ainda mais grave
+    */
+
+    fala.pitch = 0.78;
+
+
+    /*
+       VOLUME
+    */
 
     fala.volume = 1;
 
@@ -183,7 +210,7 @@ function falar(texto) {
     fala.onstart = function() {
 
         debug.innerText =
-            "Voz funcionando.";
+            "JARVIS falando...";
 
     };
 
@@ -191,7 +218,7 @@ function falar(texto) {
     fala.onend = function() {
 
         debug.innerText =
-            "Fala terminou.";
+            "Voz funcionando.";
 
     };
 
@@ -239,7 +266,7 @@ function ouvir() {
             "Reconhecimento de voz não disponível.";
 
         debug.innerText =
-            "ERRO: SpeechRecognition não encontrado.";
+            "SpeechRecognition não encontrado.";
 
         return;
 
@@ -302,24 +329,12 @@ function ouvir() {
     reconhecimento.onerror =
         function(event) {
 
-
             status.innerText =
                 "Erro no reconhecimento.";
-
 
             debug.innerText =
                 "ERRO DO MICROFONE: " +
                 event.error;
-
-        };
-
-
-    reconhecimento.onend =
-        function() {
-
-            console.log(
-                "Reconhecimento encerrado."
-            );
 
         };
 
@@ -343,7 +358,7 @@ function ouvir() {
 
 
 /* =================================
-   RESPOSTAS
+   COMANDOS
    ================================= */
 
 function responder(texto) {
@@ -352,6 +367,10 @@ function responder(texto) {
     texto =
         texto.toLowerCase();
 
+
+    /*
+       OI
+    */
 
     if (
         texto.includes("oi") ||
@@ -377,6 +396,10 @@ function responder(texto) {
 
 
 
+    /*
+       OK JARVIS
+    */
+
     if (
         texto.includes("ok jarvis") ||
         texto.includes("okay jarvis")
@@ -399,6 +422,10 @@ function responder(texto) {
     }
 
 
+
+    /*
+       QUEM É VOCÊ
+    */
 
     if (
         texto.includes("quem é você") ||
@@ -423,6 +450,10 @@ function responder(texto) {
 
 
 
+    /*
+       OBRIGADO
+    */
+
     if (
         texto.includes("obrigado") ||
         texto.includes("obrigada")
@@ -446,6 +477,10 @@ function responder(texto) {
 
 
 
+    /*
+       COMANDO DESCONHECIDO
+    */
+
     const resposta =
 
         "Comando recebido, senhor. Ainda estou aprendendo a responder a esse comando.";
@@ -458,7 +493,6 @@ function responder(texto) {
     falar(resposta);
 
 }
-
 
 
 </script>
