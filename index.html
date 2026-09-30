@@ -2,282 +2,247 @@
 <html lang="pt-BR">
 
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>JARVIS</title>
 
 <style>
 
 body {
+
     margin: 0;
+
     background: #050505;
+
     color: white;
+
     font-family: Arial, sans-serif;
+
     text-align: center;
 
     height: 100vh;
 
     display: flex;
+
     flex-direction: column;
+
     justify-content: center;
+
     align-items: center;
+
 }
 
 h1 {
-    font-size: 32px;
-    letter-spacing: 6px;
+
+    font-size: 34px;
+
+    letter-spacing: 7px;
+
     margin-bottom: 10px;
+
 }
 
-p {
+#status {
+
     color: #aaa;
-    font-size: 18px;
+
+    font-size: 17px;
+
     max-width: 90%;
+
     line-height: 1.5;
+
 }
 
-#listaVozes {
-    margin-top: 15px;
+#debug {
+
     color: #777;
-    font-size: 14px;
+
+    font-size: 13px;
+
+    margin-top: 15px;
+
     max-width: 90%;
+
 }
 
 button {
+
     margin-top: 30px;
-    padding: 18px 25px;
+
+    padding: 18px 28px;
 
     border: 1px solid white;
+
     border-radius: 50px;
 
     background: transparent;
+
     color: white;
 
     font-size: 16px;
+
 }
 
 button:active {
+
     background: white;
+
     color: black;
+
 }
 
 </style>
 
 </head>
 
+
 <body>
+
 
 <h1>J.A.R.V.I.S.</h1>
 
-<p id="mensagem">
-Boa noite, senhor.
-</p>
 
-<div id="listaVozes"></div>
+<div id="status">
+
+Sistema pronto.
+
+</div>
+
+
+<div id="debug">
+
+Aguardando comando...
+
+</div>
+
 
 <button onclick="ouvir()">
+
 🎙️ Falar com JARVIS
+
 </button>
+
 
 
 <script>
 
-/* ==========================================
-   SISTEMA DE VOZ
-   ========================================== */
 
-let vozes = [];
+/* =================================
+   ELEMENTOS DA TELA
+   ================================= */
 
-let vozSelecionada = null;
+const status =
+document.getElementById("status");
 
-
-/* ==========================================
-   CARREGAR VOZES DO CELULAR
-   ========================================== */
-
-function carregarVozes() {
-
-    vozes =
-        window.speechSynthesis.getVoices();
-
-    vozes =
-        vozes.filter(function(voz) {
-
-            return voz.lang
-                .toLowerCase()
-                .startsWith("pt");
-
-        });
-
-    mostrarVozes();
-}
+const debug =
+document.getElementById("debug");
 
 
-/* ==========================================
-   MOSTRAR VOZES NA TELA
-   ========================================== */
 
-function mostrarVozes() {
-
-    const lista =
-        document.getElementById("listaVozes");
-
-    if (vozes.length === 0) {
-
-        lista.innerText =
-            "Nenhuma voz em português encontrada.";
-
-        return;
-    }
-
-
-    let texto =
-        "Vozes disponíveis: ";
-
-    for (
-        let i = 0;
-        i < vozes.length;
-        i++
-    ) {
-
-        texto +=
-            (i + 1) +
-            ". " +
-            vozes[i].name;
-
-        if (i < vozes.length - 1) {
-
-            texto += " | ";
-        }
-    }
-
-    lista.innerText = texto;
-}
-
-
-/* ==========================================
-   CARREGAR QUANDO O CELULAR DISPONIBILIZAR
-   ========================================== */
-
-window.speechSynthesis.onvoiceschanged =
-    carregarVozes;
-
-carregarVozes();
-
-
-/* ==========================================
-   JARVIS FALA
-   ========================================== */
+/* =================================
+   TESTE DE VOZ
+   ================================= */
 
 function falar(texto) {
 
-    const voz =
-        new SpeechSynthesisUtterance(texto);
+    debug.innerText =
+        "Teste de voz: tentando falar...";
 
 
-    voz.lang = "pt-BR";
+    if (!("speechSynthesis" in window)) {
 
+        debug.innerText =
+            "ERRO: síntese de voz não disponível.";
 
-    if (vozSelecionada) {
+        return;
 
-        voz.voice =
-            vozSelecionada;
     }
-
-
-    /*
-    VELOCIDADE
-    1 = normal
-    Menor = mais lento
-    Maior = mais rápido
-    */
-
-    voz.rate = 0.95;
-
-
-    /*
-    TOM
-    1 = normal
-    Menor = mais grave
-    Maior = mais agudo
-    */
-
-    voz.pitch = 0.85;
-
-
-    voz.volume = 1;
 
 
     window.speechSynthesis.cancel();
 
-    window.speechSynthesis.speak(voz);
+
+    const fala =
+        new SpeechSynthesisUtterance(texto);
+
+
+    fala.lang = "pt-BR";
+
+    fala.rate = 0.95;
+
+    fala.pitch = 0.85;
+
+    fala.volume = 1;
+
+
+    fala.onstart = function() {
+
+        debug.innerText =
+            "Voz funcionando.";
+
+    };
+
+
+    fala.onend = function() {
+
+        debug.innerText =
+            "Fala terminou.";
+
+    };
+
+
+    fala.onerror = function(event) {
+
+        debug.innerText =
+            "ERRO NA VOZ: " +
+            event.error;
+
+    };
+
+
+    window.speechSynthesis.speak(fala);
+
 }
 
 
-/* ==========================================
-   TESTAR UMA VOZ
-   ========================================== */
 
-function testarVoz(numero) {
-
-    if (
-        numero < 1 ||
-        numero > vozes.length
-    ) {
-
-        falar(
-            "Essa voz não está disponível, senhor."
-        );
-
-        return;
-    }
-
-
-    vozSelecionada =
-        vozes[numero - 1];
-
-
-    const mensagem =
-        "Olá, senhor. Esta é a voz número " +
-        numero +
-        ".";
-
-
-    document.getElementById("mensagem")
-        .innerText =
-        mensagem;
-
-
-    falar(mensagem);
-}
-
-
-/* ==========================================
+/* =================================
    RECONHECIMENTO DE VOZ
-   ========================================== */
+   ================================= */
 
 function ouvir() {
 
-    const mensagem =
-        document.getElementById("mensagem");
+
+    status.innerText =
+        "🎙️ Estou ouvindo...";
+
+
+    debug.innerText =
+        "Iniciando microfone...";
 
 
     const Reconhecimento =
+
         window.SpeechRecognition ||
+
         window.webkitSpeechRecognition;
 
 
     if (!Reconhecimento) {
 
-        mensagem.innerText =
-            "Seu navegador não suporta reconhecimento de voz.";
+        status.innerText =
+            "Reconhecimento de voz não disponível.";
 
-        falar(
-            "Senhor, este navegador não suporta reconhecimento de voz."
-        );
+        debug.innerText =
+            "ERRO: SpeechRecognition não encontrado.";
 
         return;
+
     }
 
 
@@ -297,142 +262,96 @@ function ouvir() {
         false;
 
 
-    mensagem.innerText =
-        "🎙️ Estou ouvindo...";
+    reconhecimento.onstart = function() {
 
+        status.innerText =
+            "🎙️ Pode falar, senhor.";
 
-    reconhecimento.start();
+        debug.innerText =
+            "Microfone iniciado.";
+
+    };
 
 
     reconhecimento.onresult =
         function(event) {
 
+
             const texto =
-                event.results[0][0]
+
+                event
+                .results[0][0]
                 .transcript;
 
 
-            mensagem.innerText =
+            status.innerText =
+
                 "Você disse: " +
                 texto;
 
 
+            debug.innerText =
+                "Reconhecimento funcionando.";
+
+
             responder(texto);
+
         };
 
 
     reconhecimento.onerror =
         function(event) {
 
-            mensagem.innerText =
-                "Erro no microfone: " +
+
+            status.innerText =
+                "Erro no reconhecimento.";
+
+
+            debug.innerText =
+                "ERRO DO MICROFONE: " +
                 event.error;
+
         };
+
+
+    reconhecimento.onend =
+        function() {
+
+            console.log(
+                "Reconhecimento encerrado."
+            );
+
+        };
+
+
+    try {
+
+        reconhecimento.start();
+
+    }
+
+    catch (erro) {
+
+        debug.innerText =
+            "ERRO AO INICIAR: " +
+            erro.message;
+
+    }
 
 }
 
 
-/* ==========================================
-   COMANDOS DO JARVIS
-   ========================================== */
+
+/* =================================
+   RESPOSTAS
+   ================================= */
 
 function responder(texto) {
 
+
     texto =
-        texto.toLowerCase().trim();
+        texto.toLowerCase();
 
-
-    /*
-    TESTAR VOZES
-    */
-
-    if (
-        texto.includes("testar vozes") ||
-        texto.includes("teste de voz") ||
-        texto.includes("testar voz")
-    ) {
-
-        if (vozes.length === 0) {
-
-            falar(
-                "Senhor, não encontrei vozes em português disponíveis."
-            );
-
-            return;
-        }
-
-
-        document.getElementById("mensagem")
-            .innerText =
-            "Encontrei " +
-            vozes.length +
-            " vozes. Diga, por exemplo: voz 1.";
-
-
-        falar(
-            "Encontrei " +
-            vozes.length +
-            " vozes em português. Diga o número da voz que deseja testar."
-        );
-
-
-        return;
-    }
-
-
-    /*
-    ESCOLHER VOZ
-    */
-
-    const numeroEncontrado =
-        texto.match(/\d+/);
-
-
-    if (
-        numeroEncontrado &&
-        (
-            texto.includes("voz") ||
-            texto.includes("número") ||
-            texto.includes("numero")
-        )
-    ) {
-
-        const numero =
-            parseInt(
-                numeroEncontrado[0]
-            );
-
-
-        testarVoz(numero);
-
-        return;
-    }
-
-
-    /*
-    OK JARVIS
-    */
-
-    if (
-        texto.includes("ok jarvis") ||
-        texto.includes("okay jarvis")
-    ) {
-
-        falar(
-            "Sim, senhor. Estou ouvindo."
-        );
-
-        document.getElementById("mensagem")
-            .innerText =
-            "Sim, senhor. Estou ouvindo.";
-
-        return;
-    }
-
-
-    /*
-    SAUDAÇÃO
-    */
 
     if (
         texto.includes("oi") ||
@@ -440,26 +359,111 @@ function responder(texto) {
         texto.includes("ola")
     ) {
 
-        falar(
-            "Olá, senhor. Como posso ajudar?"
-        );
 
-        document.getElementById("mensagem")
-            .innerText =
+        const resposta =
             "Olá, senhor. Como posso ajudar?";
 
+
+        status.innerText =
+            resposta;
+
+
+        falar(resposta);
+
+
         return;
+
     }
 
 
-    /*
-    QUEM É VOCÊ
-    */
+
+    if (
+        texto.includes("ok jarvis") ||
+        texto.includes("okay jarvis")
+    ) {
+
+
+        const resposta =
+            "Sim, senhor. Estou ouvindo.";
+
+
+        status.innerText =
+            resposta;
+
+
+        falar(resposta);
+
+
+        return;
+
+    }
+
+
 
     if (
         texto.includes("quem é você") ||
-        texto.includes("quem e você") ||
         texto.includes("quem e voce")
     ) {
 
-       
+
+        const resposta =
+            "Eu sou JARVIS, seu assistente pessoal.";
+
+
+        status.innerText =
+            resposta;
+
+
+        falar(resposta);
+
+
+        return;
+
+    }
+
+
+
+    if (
+        texto.includes("obrigado") ||
+        texto.includes("obrigada")
+    ) {
+
+
+        const resposta =
+            "Sempre às ordens, senhor.";
+
+
+        status.innerText =
+            resposta;
+
+
+        falar(resposta);
+
+
+        return;
+
+    }
+
+
+
+    const resposta =
+
+        "Comando recebido, senhor. Ainda estou aprendendo a responder a esse comando.";
+
+
+    status.innerText =
+        resposta;
+
+
+    falar(resposta);
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
