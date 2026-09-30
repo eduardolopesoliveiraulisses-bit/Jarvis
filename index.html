@@ -33,6 +33,7 @@ h1 {
 p {
     color: #aaa;
     font-size: 18px;
+    max-width: 90%;
 }
 
 button {
@@ -69,9 +70,24 @@ button:active {
 
 <script>
 
+function falar(texto) {
+
+    const voz = new SpeechSynthesisUtterance(texto);
+
+    voz.lang = "pt-BR";
+    voz.rate = 1;
+    voz.pitch = 0.9;
+    voz.volume = 1;
+
+    window.speechSynthesis.cancel();
+
+    window.speechSynthesis.speak(voz);
+}
+
 function ouvir() {
 
-    const mensagem = document.getElementById("mensagem");
+    const mensagem =
+        document.getElementById("mensagem");
 
     const Reconhecimento =
         window.SpeechRecognition ||
@@ -82,10 +98,13 @@ function ouvir() {
         mensagem.innerText =
             "Seu navegador não suporta reconhecimento de voz.";
 
+        falar("Senhor, este navegador não suporta reconhecimento de voz.");
+
         return;
     }
 
-    const reconhecimento = new Reconhecimento();
+    const reconhecimento =
+        new Reconhecimento();
 
     reconhecimento.lang = "pt-BR";
 
@@ -93,7 +112,8 @@ function ouvir() {
 
     reconhecimento.interimResults = false;
 
-    mensagem.innerText = "🎙️ Estou ouvindo...";
+    mensagem.innerText =
+        "🎙️ Estou ouvindo...";
 
     reconhecimento.start();
 
@@ -105,6 +125,8 @@ function ouvir() {
         mensagem.innerText =
             "Você disse: " + texto;
 
+        responder(texto);
+
     };
 
     reconhecimento.onerror = function(event) {
@@ -114,11 +136,34 @@ function ouvir() {
 
     };
 
-    reconhecimento.onend = function() {
+}
 
-        console.log("Reconhecimento encerrado.");
+function responder(texto) {
 
-    };
+    texto = texto.toLowerCase();
+
+    if (texto.includes("olá") ||
+        texto.includes("ola") ||
+        texto.includes("oi")) {
+
+        const resposta =
+            "Olá, senhor. Como posso ajudar?";
+
+        document.getElementById("mensagem")
+            .innerText = resposta;
+
+        falar(resposta);
+
+    } else {
+
+        const resposta =
+            "Comando recebido, senhor. Ainda estou aprendendo a responder a esse tipo de comando.";
+
+        document.getElementById("mensagem")
+            .innerText = resposta;
+
+        falar(resposta);
+    }
 
 }
 
