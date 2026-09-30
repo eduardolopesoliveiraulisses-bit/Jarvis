@@ -1,503 +1,175 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
-<title>JARVIS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S.</title>
 
 <style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
 body {
-
-    margin: 0;
-
-    background: #050505;
-
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at center, #10202a 0%, #05090d 38%, #000 75%);
     color: white;
-
-    font-family: Arial, sans-serif;
-
-    text-align: center;
-
-    height: 100vh;
-
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
     display: flex;
-
-    flex-direction: column;
-
     justify-content: center;
-
     align-items: center;
-
 }
 
-h1 {
+/* LINHAS DE FUNDO */
 
-    font-size: 34px;
-
-    letter-spacing: 7px;
-
-    margin-bottom: 10px;
-
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(rgba(0,180,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,180,255,0.035) 1px, transparent 1px);
+    background-size: 35px 35px;
+    pointer-events: none;
 }
 
-#status {
+/* INTERFACE */
 
-    color: #aaa;
-
-    font-size: 17px;
-
-    max-width: 90%;
-
-    line-height: 1.5;
-
+.jarvis {
+    width: 100%;
+    max-width: 500px;
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 35px 20px 25px;
 }
 
-#debug {
+/* CABEÇALHO */
 
-    color: #777;
-
-    font-size: 13px;
-
-    margin-top: 15px;
-
-    max-width: 90%;
-
+.header {
+    text-align: center;
+    z-index: 5;
 }
 
-button {
-
-    margin-top: 30px;
-
-    padding: 18px 28px;
-
-    border: 1px solid white;
-
-    border-radius: 50px;
-
-    background: transparent;
-
-    color: white;
-
-    font-size: 16px;
-
+.logo {
+    font-size: 25px;
+    letter-spacing: 8px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow:
+        0 0 8px #00aaff,
+        0 0 20px rgba(0,170,255,0.5);
 }
 
-button:active {
-
-    background: white;
-
-    color: black;
-
+.subtitle {
+    margin-top: 8px;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #6c8995;
 }
 
-</style>
-
-</head>
-
-
-<body>
-
-
-<h1>J.A.R.V.I.S.</h1>
-
-
-<div id="status">
-
-Sistema pronto.
-
-</div>
-
-
-<div id="debug">
-
-Aguardando comando...
-
-</div>
-
-
-<button onclick="ouvir()">
-
-🎙️ Falar com JARVIS
-
-</button>
-
-
-
-<script>
-
-
-/* =================================
-   ELEMENTOS
-   ================================= */
-
-const status =
-document.getElementById("status");
-
-const debug =
-document.getElementById("debug");
-
-
-
-/* =================================
-   VOZ DO JARVIS
-   ================================= */
-
-function falar(texto) {
-
-    if (!("speechSynthesis" in window)) {
-
-        debug.innerText =
-            "Síntese de voz não disponível.";
-
-        return;
-
-    }
-
-
-    window.speechSynthesis.cancel();
-
-
-    const fala =
-        new SpeechSynthesisUtterance(texto);
-
-
-    /*
-       IDIOMA
-    */
-
-    fala.lang = "pt-BR";
-
-
-    /*
-       VELOCIDADE
-
-       1.0 = normal
-
-       0.90 = um pouco mais lento
-
-       0.80 = mais lento
-    */
-
-    fala.rate = 0.88;
-
-
-    /*
-       TOM
-
-       1.0 = normal
-
-       0.85 = mais grave
-
-       0.75 = ainda mais grave
-    */
-
-    fala.pitch = 0.78;
-
-
-    /*
-       VOLUME
-    */
-
-    fala.volume = 1;
-
-
-    fala.onstart = function() {
-
-        debug.innerText =
-            "JARVIS falando...";
-
-    };
-
-
-    fala.onend = function() {
-
-        debug.innerText =
-            "Voz funcionando.";
-
-    };
-
-
-    fala.onerror = function(event) {
-
-        debug.innerText =
-            "ERRO NA VOZ: " +
-            event.error;
-
-    };
-
-
-    window.speechSynthesis.speak(fala);
-
+/* NÚCLEO */
+
+.core-container {
+    position: relative;
+    width: 290px;
+    height: 290px;
+    margin-top: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/* BRILHO */
 
-
-/* =================================
-   RECONHECIMENTO DE VOZ
-   ================================= */
-
-function ouvir() {
-
-
-    status.innerText =
-        "🎙️ Estou ouvindo...";
-
-
-    debug.innerText =
-        "Iniciando microfone...";
-
-
-    const Reconhecimento =
-
-        window.SpeechRecognition ||
-
-        window.webkitSpeechRecognition;
-
-
-    if (!Reconhecimento) {
-
-        status.innerText =
-            "Reconhecimento de voz não disponível.";
-
-        debug.innerText =
-            "SpeechRecognition não encontrado.";
-
-        return;
-
-    }
-
-
-    const reconhecimento =
-        new Reconhecimento();
-
-
-    reconhecimento.lang =
-        "pt-BR";
-
-
-    reconhecimento.continuous =
-        false;
-
-
-    reconhecimento.interimResults =
-        false;
-
-
-    reconhecimento.onstart = function() {
-
-        status.innerText =
-            "🎙️ Pode falar, senhor.";
-
-        debug.innerText =
-            "Microfone iniciado.";
-
-    };
-
-
-    reconhecimento.onresult =
-        function(event) {
-
-
-            const texto =
-
-                event
-                .results[0][0]
-                .transcript;
-
-
-            status.innerText =
-
-                "Você disse: " +
-                texto;
-
-
-            debug.innerText =
-                "Reconhecimento funcionando.";
-
-
-            responder(texto);
-
-        };
-
-
-    reconhecimento.onerror =
-        function(event) {
-
-            status.innerText =
-                "Erro no reconhecimento.";
-
-            debug.innerText =
-                "ERRO DO MICROFONE: " +
-                event.error;
-
-        };
-
-
-    try {
-
-        reconhecimento.start();
-
-    }
-
-    catch (erro) {
-
-        debug.innerText =
-            "ERRO AO INICIAR: " +
-            erro.message;
-
-    }
-
+.core-glow {
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: #00aaff;
+    opacity: 0.08;
+    filter: blur(30px);
+    animation: glow 2.5s ease-in-out infinite;
 }
 
-
-
-/* =================================
-   COMANDOS
-   ================================= */
-
-function responder(texto) {
-
-
-    texto =
-        texto.toLowerCase();
-
-
-    /*
-       OI
-    */
-
-    if (
-        texto.includes("oi") ||
-        texto.includes("olá") ||
-        texto.includes("ola")
-    ) {
-
-
-        const resposta =
-            "Olá, senhor. Como posso ajudar?";
-
-
-        status.innerText =
-            resposta;
-
-
-        falar(resposta);
-
-
-        return;
-
-    }
-
-
-
-    /*
-       OK JARVIS
-    */
-
-    if (
-        texto.includes("ok jarvis") ||
-        texto.includes("okay jarvis")
-    ) {
-
-
-        const resposta =
-            "Sim, senhor. Estou ouvindo.";
-
-
-        status.innerText =
-            resposta;
-
-
-        falar(resposta);
-
-
-        return;
-
-    }
-
-
-
-    /*
-       QUEM É VOCÊ
-    */
-
-    if (
-        texto.includes("quem é você") ||
-        texto.includes("quem e voce")
-    ) {
-
-
-        const resposta =
-            "Eu sou JARVIS, seu assistente pessoal.";
-
-
-        status.innerText =
-            resposta;
-
-
-        falar(resposta);
-
-
-        return;
-
-    }
-
-
-
-    /*
-       OBRIGADO
-    */
-
-    if (
-        texto.includes("obrigado") ||
-        texto.includes("obrigada")
-    ) {
-
-
-        const resposta =
-            "Sempre às ordens, senhor.";
-
-
-        status.innerText =
-            resposta;
-
-
-        falar(resposta);
-
-
-        return;
-
-    }
-
-
-
-    /*
-       COMANDO DESCONHECIDO
-    */
-
-    const resposta =
-
-        "Comando recebido, senhor. Ainda estou aprendendo a responder a esse comando.";
-
-
-    status.innerText =
-        resposta;
-
-
-    falar(resposta);
-
+/* ANEL EXTERNO */
+
+.ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(0,174,255,0.45);
 }
 
+.ring-one {
+    width: 280px;
+    height: 280px;
+    border-top-color: #00aaff;
+    border-bottom-color: rgba(0,255,150,0.35);
+    animation: spin 12s linear infinite;
+}
 
-</script>
+.ring-two {
+    width: 235px;
+    height: 235px;
+    border-left-color: #00aaff;
+    border-right-color: rgba(255,255,255,0.35);
+    animation: spinReverse 8s linear infinite;
+}
 
+.ring-three {
+    width: 195px;
+    height: 195px;
+    border-top-color: #00ff9d;
+    border-bottom-color: #00aaff;
+    animation: spin 5s linear infinite;
+}
 
-</body>
+/* MARCADORES */
 
-</html>
+.marker {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #00aaff;
+    box-shadow: 0 0 10px #00aaff;
+}
+
+.marker-one {
+    top: 17px;
+    left: 50%;
+}
+
+.marker-two {
+    right: 17px;
+    top: 50%;
+}
+
+.marker-three {
+    bottom: 17px;
+    left: 50%;
+}
+
+.marker-four {
+    left: 17px;
+    top: 50%;
+}
+
+/* NÚCLEO CENTRAL */
+
+.core {
+    width: 125px;
+    height: 125px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle,
+        #ffffff 0%,
+        #b9f5ff 8%,
+        #00c8ff 20%,
+        #006
